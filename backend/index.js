@@ -9,40 +9,52 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5050;
 
-/* =======================
-   MIDDLEWARES
-   ======================= */
-app.use(cors({
-  origin: [
-    "https://oa-discussion.netlify.app",
-    "http://localhost:5173"
-  ],
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-  credentials: true
-}));
+/* =========================
+   CORS (FIXED)
+   ========================= */
+app.use(
+  cors({
+    origin: [
+      "https://oa-discussion.netlify.app",
+      "http://localhost:5173",
+    ],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+      "x-user-id", // ✅ VERY IMPORTANT
+    ],
+  })
+);
 
+// ✅ Explicit preflight handling
+app.options("*", cors());
+
+/* =========================
+   Middlewares
+   ========================= */
 app.use(express.json());
 
-/* =======================
-   ROUTES
-   ======================= */
+/* =========================
+   Routes
+   ========================= */
+app.use("/api/discussions", discussionRoutes);
+
+/* Root */
 app.get("/", (req, res) => {
   res.send("API running");
 });
 
-app.use("/api/discussions", discussionRoutes);
-
-/* =======================
-   DATABASE
-   ======================= */
+/* =========================
+   MongoDB
+   ========================= */
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => {
     console.log("✅ MongoDB connected");
-    app.listen(PORT, () => {
-      console.log(`✅ Server running on port ${PORT}`);
-    });
+    app.listen(PORT, () =>
+      console.log(`✅ Server running on port ${PORT}`)
+    );
   })
   .catch((err) => {
     console.error("❌ MongoDB connection error:", err);

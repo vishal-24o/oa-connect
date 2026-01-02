@@ -15,7 +15,6 @@ router.get("/", async (req, res) => {
   }
 });
 
-
 /* ===============================
    GET single discussion by ID
    =============================== */
@@ -33,7 +32,9 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-
+/* ===============================
+   CREATE discussion
+   =============================== */
 router.post("/", async (req, res) => {
   console.log("📩 POST /api/discussions HIT");
   console.log("BODY:", req.body);
@@ -48,36 +49,34 @@ router.post("/", async (req, res) => {
   }
 });
 
-
 /* ===============================
-   DELETE discussion (owner or admin)
+   DELETE discussion (author only)
    =============================== */
 router.delete("/:id", async (req, res) => {
   try {
-    const discussion = await Discussion.findById(req.params.id);
+    const { authorId } = req.body;
+    const { id } = req.params;
+
+    if (!authorId) {
+      return res.status(401).json({ message: "Author ID required" });
+    }
+
+    const discussion = await Discussion.findById(id);
 
     if (!discussion) {
       return res.status(404).json({ message: "Discussion not found" });
     }
 
-    const currentUserId = req.headers["x-user-id"];
-    const adminId = process.env.ADMIN_USER_ID;
-
-    // Authorization check
-    if (
-      discussion.authorId !== currentUserId &&
-      currentUserId !== adminId
-    ) {
+    if (discussion.authorId !== authorId) {
       return res.status(403).json({ message: "Not authorized to delete" });
     }
 
     await discussion.deleteOne();
     res.json({ message: "Discussion deleted successfully" });
   } catch (err) {
-    res.status(400).json({ message: "Failed to delete discussion" });
+    console.error("❌ DELETE ERROR:", err);
+    res.status(500).json({ message: "Failed to delete discussion" });
   }
 });
-
-
 
 export default router;
