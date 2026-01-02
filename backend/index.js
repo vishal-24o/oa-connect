@@ -9,55 +9,49 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5050;
 
-/* Middlewares */
-app.use(
-  cors({
-    origin: [
-      "https://oa-discussion.netlify.app",
-      "http://localhost:5173"
-    ],
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type"],
-  })
-);
+/* =======================
+   MIDDLEWARES
+   ======================= */
+app.use(cors({
+  origin: [
+    "https://oa-discussion.netlify.app",
+    "http://localhost:5173"
+  ],
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true
+}));
 
-app.options("*", cors());
+// Handle preflight safely (Node 22 compatible)
+app.use((req, res, next) => {
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(204);
+  }
+  next();
+});
+
 app.use(express.json());
-app.use("/api/discussions", discussionRoutes);
 
-/* Root check */
+/* =======================
+   ROUTES
+   ======================= */
 app.get("/", (req, res) => {
   res.send("API running");
 });
 
-/* STEP 2: Dummy discussions API */
-app.get("/api/discussions", (req, res) => {
-  res.json([
-    {
-      id: 1,
-      title: "Amazon OA – SDE Intern",
-      company: "Amazon",
-      difficulty: "Medium",
-      author: "demo-user"
-    },
-    {
-      id: 2,
-      title: "Google OA – SWE",
-      company: "Google",
-      difficulty: "Hard",
-      author: "demo-user"
-    }
-  ]);
-});
+// ✅ REAL discussions API (MongoDB)
+app.use("/api/discussions", discussionRoutes);
 
-/* MongoDB connection */
+/* =======================
+   DATABASE
+   ======================= */
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => {
     console.log("✅ MongoDB connected");
-    app.listen(PORT, () =>
-      console.log(`✅ Server running on port ${PORT}`)
-    );
+    app.listen(PORT, () => {
+      console.log(`✅ Server running on port ${PORT}`);
+    });
   })
   .catch((err) => {
     console.error("❌ MongoDB connection error:", err);
