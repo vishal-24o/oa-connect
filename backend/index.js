@@ -22,14 +22,6 @@ app.use(cors({
   credentials: true
 }));
 
-// Handle preflight safely (Node 22 compatible)
-app.use((req, res, next) => {
-  if (req.method === "OPTIONS") {
-    return res.sendStatus(204);
-  }
-  next();
-});
-
 app.use(express.json());
 
 /* =======================
@@ -39,7 +31,6 @@ app.get("/", (req, res) => {
   res.send("API running");
 });
 
-// ✅ REAL discussions API (MongoDB)
 app.use("/api/discussions", discussionRoutes);
 
 /* =======================
