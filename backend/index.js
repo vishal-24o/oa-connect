@@ -10,7 +10,18 @@ const app = express();
 const PORT = process.env.PORT || 5050;
 
 /* Middlewares */
-app.use(cors());
+app.use(
+  cors({
+    origin: [
+      "https://oa-discussion.netlify.app",
+      "http://localhost:5173"
+    ],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type"],
+  })
+);
+
+app.options("*", cors());
 app.use(express.json());
 app.use("/api/discussions", discussionRoutes);
 
