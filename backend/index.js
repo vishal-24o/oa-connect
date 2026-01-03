@@ -10,26 +10,30 @@ const app = express();
 const PORT = process.env.PORT || 5050;
 
 /* =========================
-   CORS (Node 22 SAFE)
+   CORS — FINAL FIX
    ========================= */
-const corsOptions = {
-  origin: [
-    "https://oa-discussion.netlify.app",
-    "http://localhost:5173",
-  ],
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: [
-    "Content-Type",
-    "Authorization",
-    "x-user-id", // ✅ REQUIRED
-  ],
-};
+app.use(
+  cors({
+    origin: [
+      "https://oa-discussion.netlify.app",
+      "http://localhost:5173",
+    ],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+      "x-user-id", // ✅ THIS WAS MISSING AT RUNTIME
+    ],
+  })
+);
 
-app.use(cors(corsOptions));
-
-/* ✅ SAFE preflight handler (NO wildcard route) */
+/* ✅ Preflight handler (NO wildcard) */
 app.use((req, res, next) => {
   if (req.method === "OPTIONS") {
+    res.header(
+      "Access-Control-Allow-Headers",
+      "Content-Type, Authorization, x-user-id"
+    );
     return res.sendStatus(204);
   }
   next();
@@ -45,7 +49,6 @@ app.use(express.json());
    ========================= */
 app.use("/api/discussions", discussionRoutes);
 
-/* Root */
 app.get("/", (req, res) => {
   res.send("API running");
 });
