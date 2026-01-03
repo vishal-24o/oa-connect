@@ -10,25 +10,30 @@ const app = express();
 const PORT = process.env.PORT || 5050;
 
 /* =========================
-   CORS (FIXED)
+   CORS (Node 22 SAFE)
    ========================= */
-app.use(
-  cors({
-    origin: [
-      "https://oa-discussion.netlify.app",
-      "http://localhost:5173",
-    ],
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: [
-      "Content-Type",
-      "Authorization",
-      "x-user-id", // ✅ VERY IMPORTANT
-    ],
-  })
-);
+const corsOptions = {
+  origin: [
+    "https://oa-discussion.netlify.app",
+    "http://localhost:5173",
+  ],
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: [
+    "Content-Type",
+    "Authorization",
+    "x-user-id", // ✅ REQUIRED
+  ],
+};
 
-// ✅ Explicit preflight handling
-app.options("*", cors());
+app.use(cors(corsOptions));
+
+/* ✅ SAFE preflight handler (NO wildcard route) */
+app.use((req, res, next) => {
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(204);
+  }
+  next();
+});
 
 /* =========================
    Middlewares
