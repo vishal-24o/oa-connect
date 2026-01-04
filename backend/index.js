@@ -3,6 +3,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import mongoose from "mongoose";
 import discussionRoutes from "./routes/discussions.js";
+import authRoutes from "./routes/auth.js";
 
 dotenv.config();
 
@@ -43,6 +44,7 @@ app.use((req, res, next) => {
    Middlewares
    ========================= */
 app.use(express.json());
+app.use("/api/auth", authRoutes);
 
 /* =========================
    Routes
@@ -67,3 +69,5 @@ mongoose
   .catch((err) => {
     console.error("❌ MongoDB connection error:", err);
   });
+console.log("EMAIL_USER:", process.env.EMAIL_USER);
+console.log("EMAIL_PASS:", process.env.EMAIL_PASS ? "LOADED" : "MISSING");
