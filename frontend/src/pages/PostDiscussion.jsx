@@ -29,6 +29,7 @@ export default function PostDiscussion() {
   };
 
   const handleSubmit = async (e) => {
+    console.log("SUBMIT CLICKED");
     e.preventDefault();
     setLoading(true);
 
@@ -68,7 +69,14 @@ export default function PostDiscussion() {
           Your post is saved permanently and visible to everyone.
         </p>
 
-        <form onSubmit={handleSubmit} className="mt-10 space-y-6">
+        <form
+        onSubmit={(e) => {
+        e.preventDefault();
+        handleSubmit(e);
+        }}
+        className="mt-10 space-y-6"
+        >
+
           <input
             name="title"
             value={formData.title}

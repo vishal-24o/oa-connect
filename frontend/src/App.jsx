@@ -1,4 +1,9 @@
-import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  useLocation,
+} from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
 
 import Navbar from "./components/Navbar";
@@ -8,22 +13,32 @@ import Home from "./pages/Home";
 import Discussions from "./pages/Discussions";
 import DiscussionDetail from "./pages/DiscussionDetail";
 import PostDiscussion from "./pages/PostDiscussion";
+import Auth from "./pages/Auth";
+import ProtectedRoute from "./components/ProtectedRoute";
 
+/* ===============================
+   Animated Routes Component
+   =============================== */
 function AnimatedRoutes() {
-  const location = useLocation(); // ✅ CORRECT PLACE
+  const location = useLocation();
 
   return (
     <AnimatePresence mode="wait">
       <Routes location={location} key={location.pathname}>
         <Route path="/" element={<Home />} />
+        <Route path="/auth" element={<Auth />} />
         <Route path="/discussions" element={<Discussions />} />
         <Route path="/discussions/:id" element={<DiscussionDetail />} />
-        <Route path="/post" element={<PostDiscussion />} />
+        <Route path="/post" element={<ProtectedRoute> <PostDiscussion /> </ProtectedRoute>}/>
+
       </Routes>
     </AnimatePresence>
   );
 }
 
+/* ===============================
+   App Root
+   =============================== */
 function App() {
   return (
     <Router>

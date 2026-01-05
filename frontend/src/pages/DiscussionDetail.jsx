@@ -1,47 +1,32 @@
 import { useEffect, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import PageWrapper from "../components/PageWrapper";
-import { getCurrentUserId } from "../utils/auth";
-
-const API_URL = import.meta.env.VITE_API_URL;
+import { fetchDiscussionById, deleteDiscussion } from "../api/discussions";
+import { useAuth } from "../context/AuthContext";
 
 export default function DiscussionDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const [discussion, setDiscussion] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const currentUserId = getCurrentUserId();
-
-  /* =========================
-     FETCH SINGLE DISCUSSION
-     ========================= */
   useEffect(() => {
-    async function fetchDiscussion() {
+    async function load() {
       try {
-        const res = await fetch(`${API_URL}/api/discussions/${id}`);
-
-        if (!res.ok) {
-          throw new Error("Discussion not found");
-        }
-
-        const data = await res.json();
+        const data = await fetchDiscussionById(id);
         setDiscussion(data);
       } catch (err) {
-        setError(err.message || "Failed to load discussion");
+        setError(err.message);
       } finally {
         setLoading(false);
       }
     }
-
-    fetchDiscussion();
+    load();
   }, [id]);
 
-  /* =========================
-     LOADING / ERROR STATES
-     ========================= */
   if (loading) {
     return (
       <PageWrapper>
@@ -59,10 +44,7 @@ export default function DiscussionDetail() {
           <p className="text-lg text-red-500">
             {error || "Discussion not found"}
           </p>
-          <Link
-            to="/discussions"
-            className="mt-4 inline-block text-blue-600 hover:underline"
-          >
+          <Link to="/discussions" className="text-blue-600 hover:underline">
             ← Back to discussions
           </Link>
         </div>
@@ -70,68 +52,42 @@ export default function DiscussionDetail() {
     );
   }
 
-  /* =========================
-     OWNER CHECK
-     ========================= */
-  const isOwner = discussion.authorId === currentUserId;
+  const isOwner = user && discussion.authorId === user.id;
 
-  /* =========================
-     DELETE HANDLER
-     ========================= */
   async function handleDelete() {
     if (!window.confirm("Delete your discussion?")) return;
 
     try {
-      const res = await fetch(
-        `${API_URL}/api/discussions/${discussion._id}`,
-        {
-          method: "DELETE",
-          headers: {
-            "x-user-id": currentUserId,
-          },
-        }
-      );
-
-      if (!res.ok) {
-        throw new Error("Not authorized or delete failed");
-      }
-
+      await deleteDiscussion(discussion._id);
       navigate("/discussions");
     } catch (err) {
-      alert("Failed to delete discussion");
+      alert(err.message);
     }
   }
 
-  /* =========================
-     UI
-     ========================= */
   return (
     <PageWrapper>
       <div className="max-w-3xl mx-auto px-6 py-28">
-        <Link
-          to="/discussions"
-          className="text-sm text-blue-600 hover:underline"
-        >
+        <Link to="/discussions" className="text-sm text-blue-600 hover:underline">
           ← Back to discussions
         </Link>
 
-        <h1 className="mt-4 text-3xl font-semibold text-slate-900 dark:text-white">
+        <h1 className="mt-4 text-3xl font-semibold">
           {discussion.title}
         </h1>
 
-        <p className="mt-2 text-slate-600 dark:text-slate-400">
+        <p className="mt-2 text-slate-600">
           {discussion.company} · {discussion.role}
         </p>
 
-        <div className="mt-4 flex flex-wrap gap-3">
-          <span className="px-3 py-1 rounded-full text-sm bg-slate-100 dark:bg-slate-700">
+        <div className="mt-4 flex gap-3 flex-wrap">
+          <span className="px-3 py-1 rounded-full bg-slate-200 text-sm">
             {discussion.difficulty}
           </span>
-
           {discussion.tags?.map((tag, i) => (
             <span
               key={i}
-              className="px-3 py-1 rounded-full text-sm bg-blue-100 dark:bg-blue-900"
+              className="px-3 py-1 rounded-full bg-blue-200 text-sm"
             >
               {tag}
             </span>
@@ -140,17 +96,16 @@ export default function DiscussionDetail() {
 
         <div className="mt-10">
           <h2 className="text-xl font-semibold">OA Question</h2>
-          <p className="mt-3 leading-relaxed">{discussion.question}</p>
+          <p className="mt-3">{discussion.question}</p>
         </div>
 
         {discussion.solution && (
           <div className="mt-8">
             <h2 className="text-xl font-semibold">Solution</h2>
-            <p className="mt-3 leading-relaxed">{discussion.solution}</p>
+            <p className="mt-3">{discussion.solution}</p>
           </div>
         )}
 
-        {/* DELETE — OWNER ONLY */}
         {isOwner && (
           <button
             onClick={handleDelete}
