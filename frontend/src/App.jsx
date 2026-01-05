@@ -1,5 +1,4 @@
 import {
-  BrowserRouter as Router,
   Routes,
   Route,
   useLocation,
@@ -29,8 +28,14 @@ function AnimatedRoutes() {
         <Route path="/auth" element={<Auth />} />
         <Route path="/discussions" element={<Discussions />} />
         <Route path="/discussions/:id" element={<DiscussionDetail />} />
-        <Route path="/post" element={<ProtectedRoute> <PostDiscussion /> </ProtectedRoute>}/>
-
+        <Route
+          path="/post"
+          element={
+            <ProtectedRoute>
+              <PostDiscussion />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
     </AnimatePresence>
   );
@@ -41,17 +46,15 @@ function AnimatedRoutes() {
    =============================== */
 function App() {
   return (
-    <Router>
-      <div className="theme-transition min-h-screen flex flex-col">
-        <Navbar />
+    <div className="theme-transition min-h-screen flex flex-col">
+      <Navbar />
 
-        <main className="flex-1">
-          <AnimatedRoutes />
-        </main>
+      <main className="flex-1">
+        <AnimatedRoutes />
+      </main>
 
-        <Footer />
-      </div>
-    </Router>
+      <Footer />
+    </div>
   );
 }
 
