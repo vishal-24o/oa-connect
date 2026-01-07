@@ -6,7 +6,8 @@ export async function sendOtpEmail(toEmail, otp) {
   await resend.emails.send({
     from: "OAConnect <onboarding@resend.dev>",
     to: toEmail,
-    subject: "Your OAConnect Login OTP",
+    subject: "Login verification for OAConnect",
+    text: `Your OAConnect login OTP is ${otp}. It expires in 10 minutes.`,
     html: `
       <div style="font-family: Arial, sans-serif;">
         <h2>OAConnect Login</h2>
