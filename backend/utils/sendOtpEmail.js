@@ -1,25 +1,17 @@
-import nodemailer from "nodemailer";
+import { Resend } from "resend";
+
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function sendOtpEmail(toEmail, otp) {
- const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 465,
-  secure: true,
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-});
-
-
-  await transporter.sendMail({
-    from: `"OAConnect" <${process.env.EMAIL_USER}>`,
+  await resend.emails.send({
+    from: "OAConnect <onboarding@resend.dev>",
     to: toEmail,
     subject: "Your OAConnect Login OTP",
     html: `
       <div style="font-family: Arial, sans-serif;">
-        <h2>Your OTP</h2>
-        <h1>${otp}</h1>
+        <h2>OAConnect Login</h2>
+        <p>Your OTP is:</p>
+        <h1 style="letter-spacing: 3px;">${otp}</h1>
         <p>This OTP expires in 10 minutes.</p>
       </div>
     `,
