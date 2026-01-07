@@ -11,7 +11,7 @@ const app = express();
 const PORT = process.env.PORT || 5050;
 
 /* =========================
-   CORS — FINAL FIX
+   CORS — FINAL & CLEAN
    ========================= */
 app.use(
   cors({
@@ -23,32 +23,21 @@ app.use(
     allowedHeaders: [
       "Content-Type",
       "Authorization",
-      "x-user-id", // ✅ THIS WAS MISSING AT RUNTIME
+      "x-user-id",
     ],
+    credentials: true,
   })
 );
-
-/* ✅ Preflight handler (NO wildcard) */
-app.use((req, res, next) => {
-  if (req.method === "OPTIONS") {
-    res.header(
-      "Access-Control-Allow-Headers",
-      "Content-Type, Authorization, x-user-id"
-    );
-    return res.sendStatus(204);
-  }
-  next();
-});
 
 /* =========================
    Middlewares
    ========================= */
 app.use(express.json());
-app.use("/api/auth", authRoutes);
 
 /* =========================
    Routes
    ========================= */
+app.use("/api/auth", authRoutes);
 app.use("/api/discussions", discussionRoutes);
 
 app.get("/", (req, res) => {
@@ -69,5 +58,6 @@ mongoose
   .catch((err) => {
     console.error("❌ MongoDB connection error:", err);
   });
+
 console.log("EMAIL_USER:", process.env.EMAIL_USER);
 console.log("EMAIL_PASS:", process.env.EMAIL_PASS ? "LOADED" : "MISSING");
